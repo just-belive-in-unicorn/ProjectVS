@@ -1,17 +1,39 @@
-.MODEL SMALL
-.STACK 100H
-.DATA
-    message DB 'Hi! THIS IS FIRST OUTPUT INTO CONSOL ON ASSSEMBLY      $'  ; Define a message with the character '0' followed by a null terminator
-.CODE
-MAIN PROC
-    MOV AX, @DATA   ; Initialize DS to point to the data segment
-    MOV DS, AX
+.model small
+.data
+    MESSAGE DB "ENTER A NUMBER (0-9): $"
+    MESSAGE1 DB "The number is: $"
+.code
+.startup
+    mov AH, 09h       ; Display "ENTER A NUMBER: "
+    mov DX, offset MESSAGE
+    int 21h
 
-    mov ah, 09h     ; DOS function to print a string
-    mov dx, OFFSET message  ; Load the offset of the message string
-    int 21h         ; Call DOS to print the message
+    mov AH, 01h       ; Input character
+    int 21h
 
-    mov ah, 4ch     ; DOS function to exit the program
-    int 21h         ; Call DOS to terminate the program
-MAIN ENDP
-END MAIN
+    sub AL, 30h       ; Convert ASCII character to numeric value
+
+    mov BL, AL        ; Store the entered number
+
+    mov AH, 09h       ; Display "The number is: "
+    mov DX, offset MESSAGE1
+    int 21h
+
+    mov DL, BL        ; Move the number to DL
+    add DL, 30h       ; Convert it to ASCII character
+
+    mov AH, 02h       ; Display the number
+    int 21h
+
+    mov AH, 02h       ; Display carriage return
+    mov DL, 0Dh       ; ASCII code for carriage return
+    int 21h
+
+    mov DL, 0Ah       ; Display line feed
+    int 21h
+
+    mov AH, 4ch       ; Exit program
+    int 21h
+
+end
+
