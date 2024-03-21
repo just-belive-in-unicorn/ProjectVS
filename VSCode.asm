@@ -1,39 +1,43 @@
 .model small
+.stack 100h
 .data
-    MESSAGE DB "ENTER A NUMBER (0-9): $"
-    MESSAGE1 DB "The number is: $"
+      msg db 'Enter the Decimal Number: $'
+      msg1   db 0dh,0ah,'Binary Number: $'
 .code
-.startup
-    mov AH, 09h       ; Display "ENTER A NUMBER: "
-    mov DX, offset MESSAGE
-    int 21h
+       main proc
+            mov ax,@data
+            mov ds,ax
 
-    mov AH, 01h       ; Input character
-    int 21h
+            mov ah,09h
+            lea dx,msg
+            int 21h
 
-    sub AL, 30h       ; Convert ASCII character to numeric value
+            mov ah,01h
+            int 21h
+            sub al,48
+            mov ah,0
+            mov bx,2
+            mov dx,0
+            mov cx,0
+        again:
+            div bx
+            push dx
+            mov ah,0
+            inc cx
+            cmp ax,0
+            jne again
 
-    mov BL, AL        ; Store the entered number
+            mov ah,09h
+            lea dx,msg1
+            int 21h
+        disp:
+            pop dx
+            add dx,48
+            mov ah,02h
+            int 21h
+            loop disp
 
-    mov AH, 09h       ; Display "The number is: "
-    mov DX, offset MESSAGE1
-    int 21h
-
-    mov DL, BL        ; Move the number to DL
-    add DL, 30h       ; Convert it to ASCII character
-
-    mov AH, 02h       ; Display the number
-    int 21h
-
-    mov AH, 02h       ; Display carriage return
-    mov DL, 0Dh       ; ASCII code for carriage return
-    int 21h
-
-    mov DL, 0Ah       ; Display line feed
-    int 21h
-
-    mov AH, 4ch       ; Exit program
-    int 21h
-
-end
-
+            mov ah,4ch
+            int 21h
+            main endp
+        end main
