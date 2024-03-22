@@ -1,7 +1,8 @@
 .model small
 .stack 100h
 .data
-    decimalNum  dw -36     ; Пример десятичного числа для преобразования
+    ; Оголошення змінних
+    decimalNum  dw -2   ; Приклад десяткового числа для перетворення
     isNegative  db ?
 
 .code
@@ -9,70 +10,90 @@ main proc
     mov ax, @data
     mov ds, ax
 
-    mov ax, decimalNum          ; Загрузка десятичного числа для преобразования
-    mov bx, 2                   ; Делитель для преобразования в двоичную систему
-    mov cx, 15                  ; Максимальное количество разрядов
+    ; Завантаження десяткового числа для перетворення
+    mov ax, decimalNum          
+
+    ; Ініціалізація змінних
+    mov bx, 2                   ; Дільник для перетворення в двійкову систему
+    mov cx, 15                  ; Максимальна кількість розрядів
     mov di, 0
 
-    ; Проверка на отрицательное число
-    mov isNegative, 0           ; Предполагаем, что число положительное
-    cmp ax, 0                   ; Сравнение с нулем
-    jge skipNegativityCheck     ; Если число больше или равно нулю, пропустить установку флага
-    mov isNegative, 1           ; Установить флаг отрицательности
-    neg ax                      ; Взять модуль числа
+    ; Перевірка на від'ємне число
+    mov isNegative, 0           ; Передбачаємо, що число додатне
+    cmp ax, 0                   ; Порівняння з нулем
+    jge skipNegativityCheck     ; Якщо число більше або дорівнює нулю, пропустити встановлення прапорця
+    mov isNegative, 1           ; Встановити прапорець від'ємності
+    neg ax                      ; Взяти модуль числа
 
 skipNegativityCheck:
     
-    sub sp, 15                  ; Выделение места в стеке для хранения двоичных разрядов
+    ; Виділення місця в стеку для зберігання двійкових розрядів
+    sub sp, 15                  
 
 binaryLoop:
-    xor dx, dx                  ; Очистка dx перед делением
-    div bx                      ; Деление на 2
-    add dl, '0'                 ; Преобразование остатка в ASCII
-    push dx                     ; Помещение двоичного разряда в стек
-    dec cx                      ; Уменьшение счетчика цикла
-    add di,1
-    test ax, ax                 ; Проверка, равен ли частное нулю
-    jnz binaryLoop              ; Если нет, продолжить цикл
+    ; Очищення dx перед діленням
+    xor dx, dx                  
+    ; Ділення на 2
+    div bx                      
+    ; Перетворення залишку в ASCII та поміщення його в стек
+    add dl, '0'                 
+    push dx                     
+    ; Зменшення лічильника циклу
+    dec cx                      
+    ; Збільшення лічильника для рахування бітів
+    add di, 1                   
+    ; Перевірка, чи дорівнює частка нулю
+    test ax, ax                 
+    ; Продовження циклу, якщо частка не дорівнює нулю
+    jnz binaryLoop              
 
-    ; Убедимся, что в стеке есть как минимум 15 двоичных разрядов
-    mov dx, '0'                 ; Инициализация dx с '0' для заполнения нулями
-    mov si, cx                  ; Счетчик для нулей
+    ; Ініціалізація dx з '0' для заповнення нулями
+    mov dx, '0'                 
+    ; Лічильник для нулів
+    mov si, cx                  
 
-    ; Вывод отрицательности, если необходимо
-    cmp isNegative, 1           ; Compare the value of isNegative with 1
-    jne notNegative             ; Jump to notNegative if isNegative is not equal to 1
-
-negativeNumber:
-    mov dl, '1'             ; If the number is negative, set the minus sign
-    mov ah, 02h             ; Function for character output
-    int 21h                 ; Output the minus sign
+    ; Вивід від'ємності, якщо потрібно
+    cmp isNegative, 1           
+    ; Вивід знаку мінус, якщо число від'ємне
+    jne notNegative             
+    mov dl, '1'             
+    mov ah, 02h             
+    int 21h                 
 
 notNegative:
-    mov dl, '0'             ; If the number is not negative, set '0'
-    mov ah, 02h             ; Function for character output
-    int 21h                 ; Output '0'
+    ; Вивід '0', якщо число не від'ємне
+    mov dl, '0'             
+    mov ah, 02h             
+    int 21h                 
 
 printPaddingZeros:
-    cmp si, 0                   ; Проверка оставшихся нулей
-    jle printBinaryLoop         ; Если нет, перейти к выводу двоичных разрядов
-    mov ah, 02h                 ; Функция вывода символа
-    int 21h                     ; Вывод нуля
-    dec si                      ; Уменьшение счетчика нулей
-    jmp printPaddingZeros       ; Цикл до вывода всех нулей
+    ; Перевірка залишившихся нулів
+    cmp si, 0                   
+    ; Якщо немає, перейти до виводу двійкових розрядів
+    jle printBinaryLoop         
+    ; Вивід нуля
+    mov ah, 02h                 
+    int 21h                     
+    ; Зменшення лічильника нулів
+    dec si                      
+    ; Цикл до виводу всіх нулів
+    jmp printPaddingZeros       
 
 printBinaryLoop:
-    pop dx                      ; Extract a binary digit from the stack
-    mov ah, 02h                 ; Function for character output
-    int 21h                     ; Output the binary digit
-    dec di
-    cmp di, 0                   ; Compare di with 0
-    jg printBinaryLoop          ; Jump back to printBinaryLoop if di is greater than 0
-
+    ; Витягнення двійкового розряду зі стеку
+    pop dx                      
+    ; Вивід двійкового розряду
+    mov ah, 02h                 
+    int 21h                     
+    ; Порівняти di з 0
+    dec di                      
+    ; Повернутися до printBinaryLoop, якщо di більший за 0
+    jg printBinaryLoop          
 
 exitProgram:
-    mov ah, 4ch                 ; Выход из программы
+    ; Вихід з програми
+    mov ah, 4ch                 
     int 21h
-
 main endp
+
 end main
