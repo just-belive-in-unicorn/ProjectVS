@@ -26,7 +26,6 @@ main proc
     neg ax                      ; Взяти модуль числа
 
 skipNegativityCheck:
-    
     ; Виділення місця в стеку для зберігання двійкових розрядів
     sub sp, 15                  
 
@@ -54,7 +53,6 @@ binaryLoop:
 
     ; Вивід від'ємності, якщо потрібно
     cmp isNegative, 1           
-    ; Вивід знаку мінус, якщо число від'ємне
     jne notNegative             
     mov dl, '1'             
     mov ah, 02h             
@@ -88,8 +86,8 @@ printBinaryLoop:
     ; Порівняти di з 0
     dec di                      
     ; Повернутися до printBinaryLoop, якщо di більший за 0
-    jg printBinaryLoop          
-
+    jg printBinaryLoop  
+        
 exitProgram:
     ; Вихід з програми
     mov ah, 4ch                 
