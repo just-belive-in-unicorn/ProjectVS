@@ -2,7 +2,7 @@
 .stack 100h
 .data
     msg         db 'Binary Number: $'
-    decimalNum  dw -1    ; Example decimal number to convert
+    decimalNum  dw 36     ; Example decimal number to convert
 
 .code
 main proc
@@ -24,9 +24,17 @@ binaryLoop:
     test ax, ax                 ; Check if quotient is zero
     jnz binaryLoop              ; If not, continue looping
 
-    mov ah, 09h                 ; Display string function
-    lea dx, msg                 ; Load message
-    int 21h                     ; Display message
+    ; Ensure that there are at least 16 binary digits in the stack
+    mov dx, '0'                 ; Initialize dx with '0' for padding
+    mov si, cx                  ; Counter for padding zeros
+
+printPaddingZeros:
+    cmp si, 0                   ; Check if there are remaining padding zeros
+    jle printBinaryLoop         ; If not, jump to printing binary digits
+    mov ah, 02h                 ; Display character function
+    int 21h                     ; Display padding zero
+    dec si                      ; Decrement padding zeros counter
+    jmp printPaddingZeros      ; Loop until all padding zeros are output
 
 printBinaryLoop:
     pop dx                      ; Pop binary digit from the stack
