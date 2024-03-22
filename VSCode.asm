@@ -1,48 +1,77 @@
 .model small
 .stack 100h
 .data
-    msg         db 'Binary Number: $'
-    decimalNum  dw 36     ; Example decimal number to convert
+    decimalNum  dw -36     ; Пример десятичного числа для преобразования
+    isNegative  db ?
 
 .code
 main proc
     mov ax, @data
     mov ds, ax
 
-    mov ax, decimalNum          ; Load the decimal number to convert
-    mov bx, 2                   ; Divisor for binary conversion
-    mov cx, 16                  ; Maximum number of digits
+    mov ax, decimalNum          ; Загрузка десятичного числа для преобразования
+    mov bx, 2                   ; Делитель для преобразования в двоичную систему
+    mov cx, 15                  ; Максимальное количество разрядов
+    mov di, 0
 
-    sub sp, 16                  ; Allocate space on the stack for binary digits
+    ; Проверка на отрицательное число
+    mov isNegative, 0           ; Предполагаем, что число положительное
+    cmp ax, 0                   ; Сравнение с нулем
+    jge skipNegativityCheck     ; Если число больше или равно нулю, пропустить установку флага
+    mov isNegative, 1           ; Установить флаг отрицательности
+    neg ax                      ; Взять модуль числа
+
+skipNegativityCheck:
+    
+    sub sp, 15                  ; Выделение места в стеке для хранения двоичных разрядов
 
 binaryLoop:
-    xor dx, dx                  ; Clear dx for division
-    div bx                      ; Divide by 2
-    add dl, '0'                 ; Convert remainder to ASCII
-    push dx                     ; Push binary digit onto the stack
-    dec cx                      ; Decrement loop counter
-    test ax, ax                 ; Check if quotient is zero
-    jnz binaryLoop              ; If not, continue looping
+    xor dx, dx                  ; Очистка dx перед делением
+    div bx                      ; Деление на 2
+    add dl, '0'                 ; Преобразование остатка в ASCII
+    push dx                     ; Помещение двоичного разряда в стек
+    dec cx                      ; Уменьшение счетчика цикла
+    add di,1
+    test ax, ax                 ; Проверка, равен ли частное нулю
+    jnz binaryLoop              ; Если нет, продолжить цикл
 
-    ; Ensure that there are at least 16 binary digits in the stack
-    mov dx, '0'                 ; Initialize dx with '0' for padding
-    mov si, cx                  ; Counter for padding zeros
+    ; Убедимся, что в стеке есть как минимум 15 двоичных разрядов
+    mov dx, '0'                 ; Инициализация dx с '0' для заполнения нулями
+    mov si, cx                  ; Счетчик для нулей
+
+    ; Вывод отрицательности, если необходимо
+    cmp isNegative, 1           ; Compare the value of isNegative with 1
+    jne notNegative             ; Jump to notNegative if isNegative is not equal to 1
+
+negativeNumber:
+    mov dl, '1'             ; If the number is negative, set the minus sign
+    mov ah, 02h             ; Function for character output
+    int 21h                 ; Output the minus sign
+
+notNegative:
+    mov dl, '0'             ; If the number is not negative, set '0'
+    mov ah, 02h             ; Function for character output
+    int 21h                 ; Output '0'
 
 printPaddingZeros:
-    cmp si, 0                   ; Check if there are remaining padding zeros
-    jle printBinaryLoop         ; If not, jump to printing binary digits
-    mov ah, 02h                 ; Display character function
-    int 21h                     ; Display padding zero
-    dec si                      ; Decrement padding zeros counter
-    jmp printPaddingZeros      ; Loop until all padding zeros are output
+    cmp si, 0                   ; Проверка оставшихся нулей
+    jle printBinaryLoop         ; Если нет, перейти к выводу двоичных разрядов
+    mov ah, 02h                 ; Функция вывода символа
+    int 21h                     ; Вывод нуля
+    dec si                      ; Уменьшение счетчика нулей
+    jmp printPaddingZeros       ; Цикл до вывода всех нулей
 
 printBinaryLoop:
-    pop dx                      ; Pop binary digit from the stack
-    mov ah, 02h                 ; Display character function
-    int 21h                     ; Display binary digit
-    loop printBinaryLoop        ; Loop until all digits are printed
+    pop dx                      ; Extract a binary digit from the stack
+    mov ah, 02h                 ; Function for character output
+    int 21h                     ; Output the binary digit
+    dec di
+    cmp di, 0                   ; Compare di with 0
+    jg printBinaryLoop          ; Jump back to printBinaryLoop if di is greater than 0
 
-    mov ah, 4ch                 ; Exit program
+
+exitProgram:
+    mov ah, 4ch                 ; Выход из программы
     int 21h
 
 main endp
