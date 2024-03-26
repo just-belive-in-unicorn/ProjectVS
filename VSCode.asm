@@ -3,7 +3,7 @@
 
 .data
 readString db 6 DUP (?)      ; Change dw to db to define a byte array for storing characters
-numberArray db 10000 DUP(?) 
+numberArray db 10000 DUP(?) ; Change dw to db to define a byte array for storing numbers
 
 .code
 
@@ -11,8 +11,8 @@ atoi proc
     xor ax, ax            ; Set initial total to 0
     xor bx, bx            ; Initialize sign flag to 0 (positive)
 
-    mov bx, word ptr readString[di] ; Retrieve the current character (use byte ptr for characters)
-    cmp bx, '-'           ; Check if the number is negative
+    mov bl, byte ptr readString[di] ; Retrieve the current character (use byte ptr for characters)
+    cmp bl, '-'           ; Check if the number is negative
     je set_negative
     jmp continue
 
@@ -23,8 +23,8 @@ set_negative:
 
 continue:
 convert:
-    mov bx, word ptr readString[di] ; Retrieve the current character
-    test bx, bx           ; Check for \0
+    mov bl, byte ptr readString[di] ; Retrieve the current character
+    test bl, bl           ; Check for \0
     jz done
     
     cmp bl, '0'           ; Anything less than '0' is invalid (use bl for the low byte of bx)
@@ -46,15 +46,21 @@ convert:
 
 error:
     mov ax, -1            ; Return -1 on error
- 
+    ret
+
 done:
     test bx, bx           ; Check if the number is negative
     jnz negative_result   ; If negative, take two's complement
-    ret                   ; Return total or error code
+    mov [numberArray + si], al ; Store the value in the current element of the array
+    inc si                ; Move to the next element of the array (assuming byte elements)
+    ret
 
 negative_result:
     neg ax                ; Take two's complement for negative numbers
+    mov [numberArray + si], al ; Store the value in the current element of the array
+    inc si                ; Move to the next element of the array (assuming byte elements)
     ret
+
 atoi endp
 
 end
