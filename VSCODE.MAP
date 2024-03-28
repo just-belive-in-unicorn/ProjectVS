@@ -1,9 +1,9 @@
 
  Start  Stop   Length Name               Class
 
- 00000H 00090H 00091H _TEXT              CODE
- 000A0H 02817H 02778H _DATA              DATA
- 02820H 0291FH 00100H STACK              STACK
+ 00000H 000C3H 000C4H _TEXT              CODE
+ 000D0H 04FBEH 04EEFH _DATA              DATA
+ 04FC0H 050BFH 00100H STACK              STACK
 
 Fatal: No program entry point
 
